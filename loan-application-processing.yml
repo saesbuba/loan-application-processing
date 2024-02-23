@@ -1,0 +1,294 @@
+openapi: 3.0.0
+servers:
+  - description: local server
+    url: http://localhost:3000
+info:
+  description: 'This is the RESTful Web API for processing loan applications, it is designed under the microservices architecture and built with [Nestjs](https://github.com/nestjs/nest) and [PostgreSQL](https://www.postgresql.org/) for data persistence.'
+  version: '1.0.0'
+  title: Loan Application Processing
+  contact:
+    email: saulesteban.bustamante@gmail.com
+tags:
+  - name: Loan applications
+    description: 'Information about a contractual relationship in which a lender (a bank or financial institution) grants credit to a beneficiary so that they can acquire a certain product or service and pay for it through a means of financing, such as a loan or a deferred payment.'
+paths:
+  /applications/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The loan application identifier, as id
+        schema:
+          type: string
+    get:
+      tags:
+        - Loan applications
+      summary: Returns loan application by id
+      description: |
+        Returns the loan application according to the loan order identifier that is established as an additional parameter in the route
+      responses:
+        '200':
+          $ref: '#/components/responses/200GetLoanApplication'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  /applications:
+    get:
+      tags:
+        - Loan applications
+      summary: Returns all loan applications found in the system
+      description: |
+        Returns all loan applications found in the system
+      responses:
+        '200':
+          $ref: '#/components/responses/200GetLoanApplications'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    post:
+      tags:
+        - Loan applications
+      summary: Loan application creation
+      description: |
+        By passing in the appropriate body payload a loan application is created
+      requestBody:
+        $ref: '#/components/requestBodies/LoanApplicationDto'
+      responses:
+        '201':
+          $ref: '#/components/responses/201NewLoanApplication'
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      properties:
+        success:
+          description: Indicates if the operation finished successfully(true) or if there was an error(false)
+          type: boolean
+        statusCode:
+          description: Indicates the http status code
+          type: number
+        message:
+          description: Extra details related to the operation
+          type: string
+        data:
+          description: Data that is retrieve if is the case
+          oneOf:
+            - type: array
+            - type: object
+    LoanApplicationDto:
+      type: object
+      properties:
+        loanType:
+          type: string
+        applicationDate:
+          type: string
+        loanAmount:
+          type: number
+        remarks:
+          type: string
+        applicant:
+          oneOf:
+            - $ref: '#/components/schemas/ApplicantDto'
+            - $ref: '#/components/schemas/Applicant'
+        responsible:
+          oneOf:
+            - $ref: '#/components/schemas/ResponsibleDto'
+            - $ref: '#/components/schemas/Responsible'
+    PersonDto:
+      type: object
+      properties:
+        name:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+        profession:
+          type: string
+    ApplicantDto:
+      $ref: '#/components/schemas/PersonDto'
+    ResponsibleDto:
+      $ref: '#/components/schemas/PersonDto'
+    LoanApplication:
+      allOf:
+        - $ref: '#/components/schemas/LoanApplicationDto'
+        - type: object
+          properties:
+            id:
+              type: number
+            applicant:
+              $ref: '#/components/schemas/Applicant'
+            responsible:
+              $ref: '#/components/schemas/Responsible'
+    Applicant:
+      allOf:
+        - $ref: '#/components/schemas/ApplicantDto'
+        - type: object
+          properties:
+            id:
+              type: number
+    Responsible:
+      allOf:
+        - $ref: '#/components/schemas/ResponsibleDto'
+        - type: object
+          properties:
+            id:
+              type: number
+  responses:
+    200GetLoanApplication:
+      description: 'A loan application was retrieved successfully'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/GenericResponse'
+              - type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LoanApplication'
+          examples:
+            200OK:
+              $ref: '#/components/examples/200LoanApplication'
+    200GetLoanApplications:
+      description: 'Loan applications were retrieved successfully'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/GenericResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LoanApplication'
+          examples:
+            200OK:
+              $ref: '#/components/examples/200LoanApplications'
+    201NewLoanApplication:
+      description: 'Loan applications were retrieved successfully'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/GenericResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LoanApplication'
+          examples:
+            200OK:
+              $ref: '#/components/examples/200LoanApplication'
+
+    404NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/GenericResponse'
+              - type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                      nullable: true
+                    minItems: 0
+                    example: []
+          examples:
+            404NotFound:
+              $ref: '#/components/examples/404NotFound'
+  requestBodies:
+    LoanApplicationDto:
+      description: 'A loan application was retrieved successfully'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoanApplicationDto'
+          examples:
+            LoanApplicationCreation:
+              $ref: '#/components/examples/LoanApplicationDto'
+  examples:
+    200LoanApplication:
+      summary: Loan application example
+      value:
+        success: true
+        statusCode: 200
+        message: ''
+        data:
+          id: 1
+          loanType: business
+          applicationDate: '2020-03-09T06:00:00.000Z'
+          loanAmount: 3000
+          remarks: ''
+          applicant:
+            id: 1
+            name: Alejandro
+            lastName: Torres
+            birthDate: '1990-03-03'
+          responsible:
+            id: 1
+            name: Teresa
+            lastName: Andrade
+            birthDate: '1980-03-03'
+    200LoanApplications:
+      summary: Loan applicants example
+      value:
+        success: true
+        statusCode: 200
+        message: ''
+        data:
+          - id: 1
+            loanType: business
+            applicationDate: '2020-03-09T06:00:00.000Z'
+            loanAmount: 3000
+            remarks: ''
+            applicant:
+              id: 1
+              name: Alejandro
+              lastName: Torres
+              birthDate: '1990-03-03'
+            responsible:
+              id: 1
+              name: Teresa
+              lastName: Andrade
+              birthDate: '1980-03-03'
+          - id: 2
+            loanType: business
+            applicationDate: '2020-03-09T06:00:00.000Z'
+            loanAmount: 3000
+            remarks: ''
+            applicant:
+              id: 2
+              name: Peter
+              lastName: Koy
+              birthDate: '1990-03-03'
+            responsible:
+              id: 2
+              name: Laurel
+              lastName: Massey
+              birthDate: '1980-03-03'
+    LoanApplicationDto:
+      summary: Loan application creation body payload example
+      value:
+        loanType: business
+        applicationDate: 03-09-2020
+        loanAmount: 3000
+        remarks: ''
+        applicant:
+          name: Peter
+          lastName: Koy
+          birthDate: 03-03-1990
+          profession: Engineer
+        responsible:
+          name: Laurel
+          lastName: Massey
+          birthDate: 03-03-1980
+    404NotFound:
+      summary: Not found payload example
+      value:
+        success: false
+        statusCode: 404
+        message: Loan application not found
+        data: []
