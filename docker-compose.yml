@@ -21,7 +21,6 @@ services:
       - POSTGRES_USER=${DATABASE_USERNAME}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-      # - POSTGRES_MULTIPLE_DATABASES=${MULTIPLE_DATABASES}
     container_name: postgres
     ports:
       - 5432:5432

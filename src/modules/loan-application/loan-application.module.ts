@@ -8,8 +8,6 @@ import { LoanApplication } from './entities/loan-application.entity';
 import { ApplicantModule } from '../applicant/applicant.module';
 import { ResponsibleModule } from '../responsible/responsible.module';
 import { UtilsService } from './utils.service';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from 'src/guards/auth.guard';
 
 @Module({
   imports: [
@@ -19,10 +17,6 @@ import { AuthGuard } from 'src/guards/auth.guard';
     TypeOrmModule.forFeature([LoanApplication]),
   ],
   controllers: [LoanApplicationController],
-  providers: [
-    LoanApplicationService,
-    UtilsService,
-    { provide: APP_GUARD, useClass: AuthGuard },
-  ],
+  providers: [LoanApplicationService, UtilsService],
 })
 export class LoanApplicationModule {}

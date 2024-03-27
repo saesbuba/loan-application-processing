@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
 import { LoanApplicationModule } from './modules/loan-application/loan-application.module';
+import { AuthModule } from './modules/authentication/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { LoanApplicationModule } from './modules/loan-application/loan-applicati
       }),
     }),
     LoanApplicationModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

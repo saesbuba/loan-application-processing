@@ -8,7 +8,7 @@ import { ApplicantService } from '../applicant/applicant.service';
 import { ResponsibleService } from '../responsible/responsible.service';
 
 import { LoanApplicationModel } from './data-models/loan-application-response-model';
-import { ResponseModel } from '../../common-data-models/response.model';
+import { Response } from '../../common-data-models/response.model';
 
 import { UtilsService } from './utils.service';
 
@@ -34,7 +34,7 @@ export class LoanApplicationService {
 
   async create(
     createLoanApplicationDto: CreateLoanApplicationDto,
-  ): Promise<ResponseModel<LoanApplicationModel | []>> {
+  ): Promise<Response<LoanApplicationModel | []>> {
     const { applicant, responsible } = createLoanApplicationDto;
 
     let applicantObject;
@@ -80,7 +80,7 @@ export class LoanApplicationService {
     };
   }
 
-  async findAll(): Promise<ResponseModel<LoanApplicationModel | []>> {
+  async findAll(): Promise<Response<LoanApplicationModel | []>> {
     const loanApplications = await this.loanApplicationRepository.find({
       relations: {
         applicant: { person: true },
@@ -105,7 +105,7 @@ export class LoanApplicationService {
     };
   }
 
-  async findOne(id: number): Promise<ResponseModel<LoanApplicationModel | []>> {
+  async findOne(id: number): Promise<Response<LoanApplicationModel | []>> {
     const loanApplication = await this.loanApplicationRepository.find({
       where: { id },
       relations: {

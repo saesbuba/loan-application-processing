@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
-export interface ResponseModel<T> {
+export interface Response<T> {
   success: boolean;
   statusCode: HttpStatus;
   message: string;
