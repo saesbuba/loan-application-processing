@@ -24,6 +24,6 @@ export class ResponsibleService {
   }
 
   async findOne(id: number) {
-    await this.responsibleRepository.findOneBy({ id });
+    return await this.responsibleRepository.findOneBy({ id });
   }
 }

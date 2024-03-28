@@ -24,6 +24,6 @@ export class ApplicantService {
   }
 
   async findOne(id: number) {
-    await this.applicantRepository.findOneBy({ id });
+    return await this.applicantRepository.findOneBy({ id });
   }
 }

@@ -1,4 +1,9 @@
-import { Injectable, HttpStatus, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpStatus,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -12,7 +17,6 @@ import { ResponseModel } from '../../common-data-models/response.model';
 
 import { UtilsService } from './utils.service';
 
-ResponsibleService;
 @Injectable()
 export class LoanApplicationService {
   _response;
@@ -35,48 +39,41 @@ export class LoanApplicationService {
   async create(
     createLoanApplicationDto: CreateLoanApplicationDto,
   ): Promise<ResponseModel<LoanApplicationModel | []>> {
-    const { applicant, responsible } = createLoanApplicationDto;
+    const { applicant: applicantDto, responsible: responsibleDto } =
+      createLoanApplicationDto;
 
-    let applicantObject;
-    if (applicant.id) {
-      applicantObject = await this.applicantService.findOne(applicant.id);
-    } else {
-      applicantObject = await this.applicantService.create(applicant);
-    }
+    const [applicant, responsible] = await Promise.all([
+      applicantDto.id
+        ? this.applicantService.findOne(applicantDto.id)
+        : this.applicantService.create(applicantDto),
+      responsibleDto.id
+        ? this.responsibleService.findOne(responsibleDto.id)
+        : this.responsibleService.create(responsibleDto),
+    ]).catch((error) => {
+      throw new InternalServerErrorException({
+        ...this._response,
+        success: false,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      });
+    });
 
-    let responsibleObject;
-    if (responsible.id) {
-      responsibleObject = await this.responsibleService.findOne(responsible.id);
-    } else {
-      responsibleObject = await this.responsibleService.create(responsible);
-    }
-
-    const newLoanApplication = new LoanApplication();
-    newLoanApplication.loanType = createLoanApplicationDto.loanType;
-    newLoanApplication.loanAmount = createLoanApplicationDto.loanAmount;
-    newLoanApplication.applicationDate = new Date(
+    const loanApplication = new LoanApplication();
+    loanApplication.loanType = createLoanApplicationDto.loanType;
+    loanApplication.loanAmount = createLoanApplicationDto.loanAmount;
+    loanApplication.applicationDate = new Date(
       createLoanApplicationDto.applicationDate,
     );
-    newLoanApplication.remarks = createLoanApplicationDto.remarks ?? '';
-    newLoanApplication.applicant = applicantObject;
-    newLoanApplication.responsible = responsibleObject;
+    loanApplication.remarks = createLoanApplicationDto.remarks ?? '';
+    loanApplication.applicant = applicant;
+    loanApplication.responsible = responsible;
 
-    const newLoanApplicationFromDataBase =
-      await this.loanApplicationRepository.save(newLoanApplication);
+    const createdLoanApplication =
+      await this.loanApplicationRepository.save(loanApplication);
 
     return {
       ...this._response,
-      data: {
-        ...newLoanApplicationFromDataBase,
-        applicant: {
-          ...newLoanApplicationFromDataBase.applicant.person,
-          id: newLoanApplicationFromDataBase.applicant.id,
-        },
-        responsible: {
-          ...newLoanApplicationFromDataBase.responsible.person,
-          id: newLoanApplicationFromDataBase.responsible.id,
-        },
-      },
+      data: this.utilsService.formatLoanApplication(createdLoanApplication),
     };
   }
 
@@ -96,17 +93,14 @@ export class LoanApplicationService {
         message: 'Loan application not found',
       });
 
-    const loanApplicationWithFormat =
-      await this.utilsService.formatLoanApplications(loanApplications);
-
     return {
       ...this._response,
-      data: loanApplicationWithFormat,
+      data: this.utilsService.formatLoanApplications(loanApplications),
     };
   }
 
   async findOne(id: number): Promise<ResponseModel<LoanApplicationModel | []>> {
-    const loanApplication = await this.loanApplicationRepository.find({
+    const loanApplication = await this.loanApplicationRepository.findOne({
       where: { id },
       relations: {
         applicant: { person: true },
@@ -114,7 +108,7 @@ export class LoanApplicationService {
       },
     });
 
-    if (!loanApplication || loanApplication.length === 0)
+    if (!loanApplication)
       throw new NotFoundException({
         ...this._response,
         success: false,
@@ -122,12 +116,9 @@ export class LoanApplicationService {
         message: 'Loan application not found',
       });
 
-    const loanApplicationWithFormat =
-      await this.utilsService.formatLoanApplications(loanApplication);
-
     return {
       ...this._response,
-      data: loanApplicationWithFormat[0],
+      data: this.utilsService.formatLoanApplication(loanApplication),
     };
   }
 }

@@ -6,23 +6,23 @@ import { LoanApplication } from './entities/loan-application.entity';
 export class UtilsService {
   constructor() {}
 
-  async formatLoanApplications(loanApplications: Array<LoanApplication>) {
-    const loanApplicationsFormatted = [];
+  formatLoanApplications(loanApplications: Array<LoanApplication>) {
+    return loanApplications.map((loanApplication) =>
+      this.formatLoanApplication(loanApplication),
+    );
+  }
 
-    for await (const loanApplication of loanApplications) {
-      loanApplicationsFormatted.push({
-        ...loanApplication,
-        applicant: {
-          ...loanApplication.applicant.person,
-          id: loanApplication.applicant.id,
-        },
-        responsible: {
-          ...loanApplication.responsible.person,
-          id: loanApplication.responsible.id,
-        },
-      });
-    }
-
-    return loanApplicationsFormatted;
+  formatLoanApplication(loanApplication: LoanApplication) {
+    return {
+      ...loanApplication,
+      applicant: {
+        ...loanApplication.applicant.person,
+        id: loanApplication.applicant.id,
+      },
+      responsible: {
+        ...loanApplication.responsible.person,
+        id: loanApplication.responsible.id,
+      },
+    };
   }
 }
